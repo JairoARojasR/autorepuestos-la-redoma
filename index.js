@@ -3,14 +3,14 @@ const express = require("express"); //s
 const dbConnect = require("./config/dbConnect"); //s
 const app = express(); //s
 const { notFound, errorHandler } = require("./middleware/error");
-
-//const userRouter=require("./routes/userRoute");//este
-//const productoRouter = require("./routes/productoRoute");
-//const pruebita = require("./public/confirm.html");
-//const tallaRouter = require("./routes/tallaRoute");
-//const uploadRouter = require("./routes/uploadRoute");
-//const colorRouter = require("./routes/colorRoute");
-//const userRouter=require("./routes/userRoute");
+const uploadRouter = require("./routes/uploadRoute");
+const marcaautoRouter = require("./routes/marcaautoRoute");
+const productoRouter = require("./routes/productoRoute");
+const rolRouter = require("./routes/productoRoute");
+const permisoRouter = require("./routes/permisoRoute");
+const personaRouter = require("./routes/personaRoute");
+const serviciosRouter = require("./routes/serviciosmantrepRoute");
+const ventaRouter = require("./routes/ventaRoute");
 const categoriaRouter=require("./routes/categoriaRoute");
 const bodyParser = require("body-parser");
 const morgan =require("morgan");
@@ -30,11 +30,17 @@ app.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);
 });  
 //app.use('/public/confirm', pruebita)
-//app.use('/api/producto', productoRouter)
-//app.use('/api/usuario', userRouter)
-//app.use('/api/talla', tallaRouter)
 app.use('/api/categoria', categoriaRouter);
-//app.use("/api/upload", uploadRouter);
+app.use('/api/marca-auto', marcaautoRouter);
+app.use('/api/persona', personaRouter);
+app.use('/api/producto', productoRouter);
+app.use('/api/rol', rolRouter);
+app.use('/api/permiso', permisoRouter);
+app.use('/api/servicios', serviciosRouter);
+app.use('/api/venta', ventaRouter);
+//app.use('/api/talla', tallaRouter)
+
+app.use("/api/upload", uploadRouter);
 app.use(bodyParser.urlencoded({ extended:false}));
 
 //app.listen(PORT, () => {

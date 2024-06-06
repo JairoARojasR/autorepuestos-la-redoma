@@ -1,127 +1,65 @@
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const User = require("../models/usuarioModel");
-const { getTokenData, getToken, generateRefreshToken } = require("../config/jwt.config");
-const { getTemplate,getTemplate2, sendEmail } = require("../config/mail.config");
+const {
+  getTokenData,
+  getToken,
+  generateRefreshToken,
+} = require("../config/jwt.config");
+const {
+  getTemplate,
+  getTemplate2,
+  sendEmail,
+} = require("../config/mail.config");
 const asyncHandler = require("express-async-handler"); //si
 const validateMongoDbId = require("../utils/validateMongodbId");
 const validateEmailFormat = require("../utils/validateMongodbEmail");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const createUser = async (req, res) => {
+
+const createUser = asyncHandler(async (req, res) => {
   try {
-    // Obtener la data del usuario: nombre, correo
-    req.body.correo = req.body.correo.trim();
-    let { nombre, correo, contrasenia, estado } = req.body;
-    let user = "";
-    // Verificar si ya existe un usuario con el mismo correo
-    const existingUser = await User.findOne({ correo });
-    if (existingUser) {
+    const existingUserCedula = await User.findOne({ cedula: req.body.cedula });
+    const existingUserCorreo = await User.findOne({ correo: req.body.correo });
+
+    if (existingUserCedula) {
       return res
         .status(400)
-        .json({ message: "Error usuario ya existe" });
+        .json({ message: "El usuario con esta cedula ya existe" });
     }
-    // Generar el código
-    const code = uuidv4();
-    // Encriptar la contraseña con bcrypt
-    if (contrasenia !== undefined) {
-      const hashedPassword = await bcrypt.hash(contrasenia, 10);
-      contrasenia = hashedPassword;
-      user = new User({
-        nombre,
-        correo,
-        code,
-        contrasenia,
-      });
-    } else {
-      user = new User({
-        nombre,
-        correo,
-        code,
-        estado,
-      });
+    if (existingUserCorreo) {
+      return res
+        .status(400)
+        .json({ message: "El usuario con este correo ya existe" });
     }
-    let template,mensaje="";
-    // Enviar email
-    if (contrasenia !== undefined) {
-      const token = getToken({ correo, code });
-      template = getTemplate(nombre, token);
-      mensaje="VERIFICACION EMAIL DE REGISTRO MADAIS";
-    } else {
-      template = getTemplate2(nombre);
-      mensaje= "REGISTRO EXITOSO";
-    }
-
-    await sendEmail(
-      correo,
-      mensaje,
-      template
-    );
-    await user.save();
-
-    return res.status(200).json({ message: "Exito" });
+    const newUser = await User.create(req.body);
+    res.json(newUser);
   } catch (error) {
-    console.log(error);
-    return res.json({
-      success: false,
-      msg: "Error al registrar usuario",
-    });
+    throw new Error(error);
   }
-};
+});
 
-const confirm = async (req, res) => {
-  try {
-    // obtener el token
-    const { token } = req.params;
-    console.log(token);
-    // verificar la data del token
-    const data = await getTokenData(token);
-    if (data === null) {
-      return res
-        .status(400)
-        .json({ message: "Error al obtener datos del token" });
-    }
-
-    console.log(data);
-
-    const { correo } = data.data;
-    // Buscar si existe el usuario
-    const user = (await User.findOne({ correo: correo })) || null;
-
-    if (user === null) {
-      return res
-        .status(400)
-        .json({ message: "Error el usuario que intenta verifcarse no existe" });
-    }
-
-    // Actualizar usuario
-    user.estado = "Verificado";
-    await user.save();
-
-    if (user.estado === "Verificado") {
-      return res.status(200).json({ message: "Exito" });
-    }
-  } catch (error) {
-    return res.json({
-      succes: false,
-      msg: "Error al confirmar usuario",
-    });
-  }
-};
-
-//Este esta bien
 const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const { cedula } = req.body;
   validateMongoDbId(id);
+
   try {
+    if (cedula) {
+      const existingUser = await User.findOne({ cedula });
+      if (existingUser && existingUser._id.toString() !== id) {
+        return res.status(400).json({ message: 'La cédula ya está en uso por otro usuario.' });
+      }
+    }
     const updatedUser = await User.findByIdAndUpdate(id, req.body, {
       new: true,
     });
     res.json(updatedUser);
   } catch (error) {
-    throw new Error(error);
+    res.status(500).json({ message: error.message });
   }
 });
+
 
 //Este esta bien
 const deleteUser = asyncHandler(async (req, res) => {
@@ -139,8 +77,8 @@ const deleteUser = asyncHandler(async (req, res) => {
 const getUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
-      validateMongoDbId(id);
-    const getUser = await User.findById({id});
+    validateMongoDbId(id);
+    const getUser = await User.findById({ id });
     res.json(getUser);
   } catch (error) {
     throw new Error(error);
@@ -248,21 +186,20 @@ const authenticateUser = async (req, res) => {
 
 const loginAdmin = asyncHandler(async (req, res) => {
   const { correo, contrasenia } = req.body;
-  
+
   // Verificar si el usuario existe
   const findUser = await User.findOne({ correo });
-  if (!findUser || (findUser.rol !== "Admin" && findUser.rol!=="Empleado")) {
-
+  if (!findUser || (findUser.rol !== "Admin" && findUser.rol !== "Empleado")) {
     throw new Error("No Authorizado");
   }
-  console.log("loginAdmin",findUser);
+  console.log("loginAdmin", findUser);
   // Verificar las credenciales
   if (findUser && (await findUser.isPasswordMatched(contrasenia))) {
     // Generar el token de actualización
-    let correo=findUser.correo;
-    let code=findUser.code;
-    const refreshToken =  generateRefreshToken({correo,code});
-    console.log("Token de refresh",refreshToken);
+    let correo = findUser.correo;
+    let code = findUser.code;
+    const refreshToken = generateRefreshToken({ correo, code });
+    console.log("Token de refresh", refreshToken);
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 72 * 60 * 60 * 1000,
@@ -277,12 +214,12 @@ const loginAdmin = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
- /* const cookie = req.cookies;
+  /* const cookie = req.cookies;
   console.log(cookie);
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
   const refreshToken = cookie.refreshToken;*/
- /* const user = await User.findOne({ refreshToken });*/
- /* if (!user) {
+  /* const user = await User.findOne({ refreshToken });*/
+  /* if (!user) {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: true,
@@ -305,7 +242,6 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
-  confirm,
   logout,
   loginAdmin,
   getUser,

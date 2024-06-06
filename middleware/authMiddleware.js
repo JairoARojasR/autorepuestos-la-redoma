@@ -5,12 +5,7 @@ const { getTokenData, getToken } = require("../config/jwt.config");
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
   try {
-    console.log("intento de token", req.headers.authorization);
-    console.log("intento de token2", res.cookie.refreshToken);
-    
     const token = req.headers["authorization"] && req.headers["authorization"].split(" ")[1];
-    
-    console.log("header", token);
 
     if (!token) return res.status(400).json({ message: "No token provided" });
 
@@ -19,7 +14,6 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
       { correo: decoded.data.correo },
       { contrasenia: 0 }
     );
-   console.log("user de autmiddleware", user)
     if (!user) return res.status(400).json({ message: "No user found" });
 
     req.user = user;
@@ -37,7 +31,7 @@ const isRole = (allowedRoles) => {
   if (hasPermission) {
       next();
     } else {
-      return res.status(403).json({ message: "No tienes permisos para acceder a esta ruta." });
+      return res.status(500).json({ message: "ERROR PERMISOS" });
     }
   };
 };
