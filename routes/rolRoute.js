@@ -4,10 +4,10 @@ const {
   updateRol,
   deleteRol,
   getRol,
-  getallRol,
+  getAllRol,
 } = require("../controller/rolCtrl");
 
-const {
+const { 
   authMiddleware,
   isRole,
 } = require("../middleware/authMiddleware"); 
@@ -21,7 +21,7 @@ router.post("/",createRol);
 router.delete("/:id",deleteRol);
 router.get("/:id", getRol);
 router.put("/:id",updateRol);
-router.get("/",getallRol);
+router.get("/",getAllRol);
 
 // router.delete("/:id",authMiddleware,  isRole(["Admin"]), deleteRol);
 // router.get("/:id", getRol);

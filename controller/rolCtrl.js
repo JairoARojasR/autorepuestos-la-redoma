@@ -1,7 +1,7 @@
 const Rol = require("../models/rolModel");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongodbId");
-//FALTA REFORMAR !!!!!!!!!!!!!!!!!!!!
+
 // Método CREAR ROL
 const createRol = async (req, res) => {
   req.body.nombre = req.body.nombre.replace(/\s+/g, " ").trim(); // Normaliza espacios y elimina espacios al inicio y al final

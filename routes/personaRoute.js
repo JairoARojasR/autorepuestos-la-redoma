@@ -1,30 +1,55 @@
 const express = require("express");
 const {
   createUser,
+  loginAdmin,
   updateUser,
+  logout,
   deleteUser,
   getUser,
   getallUser,
 } = require("../controller/usuarioCtrl");
 
+const {sendEmailReset} = require("../config/mail.config");
+const {getTokenData} = require("../config/jwt.config");
+
 const {
   authMiddleware,
   isRole,
 } = require("../middleware/authMiddleware"); 
-
 const router = express.Router();
-//const { authJwt } = require('../middlewares');
-//const { verifyToken, checkPermission } = authJwt;
 router.post("/", createUser);
-//router.post("/", authMiddleware, isRole(["Admin" , "Empleado"]), createCategoria);
-//router.put("/:id", [authJwt.verifyToken, authJwt.checkPermission('65b93de42d4d1eab56a0825d')], updateCategoria);
 router.delete("/:id", deleteUser);
-router.get("/:id", getUser);
+router.get("/correo/:correo", getUser); 
+router.post("/login", loginAdmin);
 router.put("/:id", updateUser);
+router.get("/logout", logout);
 router.get("/", getallUser);
+router.get("/getTokenData/:token", async (req, res) => {
+  try {
+    const token = req.params.token;
+    // Verificar si el token está presente
+    if (!token) {
+      return res.status(400).json({ error: "Token no proporcionado" });
+    }
 
-// router.delete("/:id",authMiddleware,  isRole(["Admin"]), deleteUser);
-// router.get("/:id", getUser);
-// router.put("/:id", authMiddleware,  isRole(["Empleado"]), updateUser);
-// router.get("/", getallUser);
+    const decoded = await getTokenData(token);
+    res.status(200).json(decoded);
+  } catch (error) {
+    console.error("Error al decodificar token:", error);
+    res.status(500).json({ error: "Error al decodificar token" });
+  }
+});
+
+router.post("/send_recovery_email",async (req, res) => {
+  const { recipient_email, OTP } = req.body;
+  sendEmailReset(recipient_email, OTP)
+    .then(() => {
+      res.status(200).send("Correo electrónico de restablecimiento enviado correctamente.");
+    })
+    .catch((error) => {
+      console.error("Error al enviar el correo electrónico de restablecimiento:", error);
+      res.status(500).send("Error al enviar el correo electrónico de restablecimiento.");
+    });
+});
+
 module.exports = router;

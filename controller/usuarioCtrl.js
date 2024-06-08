@@ -19,23 +19,30 @@ require("dotenv").config();
 
 const createUser = asyncHandler(async (req, res) => {
   try {
-    const existingUserCedula = await User.findOne({ cedula: req.body.cedula });
-    const existingUserCorreo = await User.findOne({ correo: req.body.correo });
+    const { cedula, correo, contrasenia } = req.body;
+    const existingUserCedula = await User.findOne({ cedula });
+    const existingUserCorreo = await User.findOne({ correo });
 
     if (existingUserCedula) {
-      return res
-        .status(400)
-        .json({ message: "El usuario con esta cedula ya existe" });
+      return res.status(400).json({ message: "El usuario con esta cedula ya existe" });
     }
+
     if (existingUserCorreo) {
-      return res
-        .status(400)
-        .json({ message: "El usuario con este correo ya existe" });
+      return res.status(400).json({ message: "El usuario con este correo ya existe" });
     }
-    const newUser = await User.create(req.body);
+
+    const code = uuidv4();
+    const hashedPassword = contrasenia ? await bcrypt.hash(contrasenia, 10) : undefined;
+
+    const newUser = await User.create({
+      ...req.body,
+      contrasenia: hashedPassword,
+      code: code
+    });
+
     res.json(newUser);
   } catch (error) {
-    throw new Error(error);
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -60,6 +67,75 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
+const createUserMadais = async (req, res) => {
+  try {
+    // Obtener la data del usuario: cedula, nombre, correo, contrasenia, estado, rol
+    let { cedula, nombre, correo, contrasenia, estado, rol, fechaNacimiento } =
+      req.body;
+    const trimmedCorreo = correo.trim();
+
+    // Verificar si ya existe un usuario con el mismo correo
+    const existingUser = await User.findOne({ correo: trimmedCorreo });
+    if (existingUser) {
+      return res.status(400).json({ message: "Error usuario ya existe" });
+    }
+    // Generar el código
+    const code = uuidv4();
+
+    // Encriptar la contraseña con bcrypt si está presente
+    if (contrasenia !== undefined) {
+      const hashedPassword = await bcrypt.hash(contrasenia, 10);
+      contrasenia = hashedPassword;
+      const existingUserNIT = await User.findOne({ cedula: cedula });
+      if (existingUserNIT) {
+        return res
+          .status(400)
+          .json({ message: "Error usuario ya existe con esa cedula" });
+      }
+    }
+
+    // Crear el usuario
+    const user = new User({
+      cedula,
+      nombre,
+      correo: trimmedCorreo,
+      code,
+      rol,
+      contrasenia,
+      estado,
+    });
+
+    // Enviar email de verificación o confirmación
+    let template, mensaje;
+    const token = getToken({ correo: trimmedCorreo, code });
+    if (contrasenia !== undefined) {
+      template = getTemplate(nombre, token);
+      mensaje = "VERIFICACION EMAIL DE REGISTRO MADAIS";
+    } else {
+      template = getTemplate2(nombre);
+      mensaje = "REGISTRO EXITOSO";
+    }
+
+    await sendEmail(trimmedCorreo, mensaje, template);
+    console.log("eUser",user );
+    // Guardar el usuario en la base de datos
+    await user.save();
+    if (rol === "Cliente" && contrasenia !== undefined) {
+      const newCliente = new Cliente({
+        cedula,
+        fechaNacimiento,
+      });
+      await newCliente.save();
+    }
+    return res.status(200).json({ rol: user.rol, token: token });
+  } catch (error) {
+    console.log("ERRRROR", error)
+    return res.status(500).json({
+      success: false,
+      msg: "Error al registrar usuario",
+    });
+  }
+};
 
 //Este esta bien
 const deleteUser = asyncHandler(async (req, res) => {
@@ -73,12 +149,10 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-//Metodo OBTENER USUARIO POR ID
 const getUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const { correo } = req.params;
   try {
-    validateMongoDbId(id);
-    const getUser = await User.findById({ id });
+    const getUser = await User.findOne({ correo });
     res.json(getUser);
   } catch (error) {
     throw new Error(error);
@@ -186,50 +260,30 @@ const authenticateUser = async (req, res) => {
 
 const loginAdmin = asyncHandler(async (req, res) => {
   const { correo, contrasenia } = req.body;
+ console.log("correo", correo);
 
   // Verificar si el usuario existe
   const findUser = await User.findOne({ correo });
-  if (!findUser || (findUser.rol !== "Admin" && findUser.rol !== "Empleado")) {
-    throw new Error("No Authorizado");
+
+  if (!findUser) {
+    return res.status(400).json({ message: "Error usuario no registrado" });
   }
-  console.log("loginAdmin", findUser);
+  let code = findUser.code;
+  const nombre= findUser.nombre;
+  const refreshToken = generateRefreshToken({ correo, code, nombre });
   // Verificar las credenciales
-  if (findUser && (await findUser.isPasswordMatched(contrasenia))) {
-    // Generar el token de actualización
-    let correo = findUser.correo;
-    let code = findUser.code;
-    const refreshToken = generateRefreshToken({ correo, code });
-    console.log("Token de refresh", refreshToken);
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-    });
-    // Devolver la respuesta con el usuario encontrado
-    res.json({
-      token: refreshToken,
-    });
-  } else {
-    throw new Error("Invalid Credentials");
+  if (contrasenia !== undefined) {
+    if (!(findUser && (await findUser.isPasswordMatched(contrasenia)))) {
+      return res.status(400).json({ message: "Error constraseña invalida" });
+    }
   }
+  res.json({
+    token: refreshToken,
+    estado: findUser.estado,
+  });
 });
 
 const logout = asyncHandler(async (req, res) => {
-  /* const cookie = req.cookies;
-  console.log(cookie);
-  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
-  const refreshToken = cookie.refreshToken;*/
-  /* const user = await User.findOne({ refreshToken });*/
-  /* if (!user) {
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,
-    });
-    return res.sendStatus(204); // forbidden
-  }
-  await User.findOneAndUpdate(refreshToken, {
-    refreshToken: "",
-  });
-*/
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: true,

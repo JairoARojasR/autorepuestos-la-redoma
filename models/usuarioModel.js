@@ -51,10 +51,10 @@ var personaSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
-  permisos:[{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Permiso',
-  }],
+  // permisos:[{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Permiso',
+  // }],
 },
 {
   timestamps: {
@@ -80,16 +80,6 @@ personaSchema.methods.createPasswordResetToken = async function () {
   return resettoken;
 };
 
-// Middleware para encriptar la contraseña antes de guardarla
-personaSchema.pre('save', async function(next) {
-  if (!this.isModified('contrasenia')) {
-    next();
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  this.contrasenia = await bcrypt.hash(this.contrasenia, salt);
-  next();
-});
 
 // Exporta el modelo
 const Persona = mongoose.model('Persona', personaSchema);
