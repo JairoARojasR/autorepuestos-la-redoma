@@ -1,6 +1,8 @@
 const express = require("express");
 const {
   createUser,
+  createProveedor,
+  createEmpleado,
   loginAdmin,
   updateUser,
   logout,
@@ -19,11 +21,18 @@ const {
 const router = express.Router();
 router.post("/", createUser);
 router.delete("/:id", deleteUser);
-router.get("/correo/:correo", getUser); 
+router.get("/:id", getUser); 
 router.post("/login", loginAdmin);
 router.put("/:id", updateUser);
 router.get("/logout", logout);
 router.get("/", getallUser);
+
+//proveedor
+router.post("/proveedor", createProveedor)
+//empleado
+router.post("/empleado", createEmpleado), 
+
+
 router.get("/getTokenData/:token", async (req, res) => {
   try {
     const token = req.params.token;

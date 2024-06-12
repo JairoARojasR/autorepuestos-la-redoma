@@ -1,6 +1,8 @@
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const User = require("../models/usuarioModel");
+const Rol = require("../models/rolModel");
+
 const {
   getTokenData,
   getToken,
@@ -46,6 +48,83 @@ const createUser = asyncHandler(async (req, res) => {
   }
 });
 
+
+const createProveedor = asyncHandler(async (req, res) => {
+  try {
+    const {nombre, cedula, correo, telefono, direccion} = req.body;
+
+
+    const existingVendedorCedula = await User.findOne({cedula});
+    const existingVendedorCorreo = await User.findOne({correo});
+
+    if (existingVendedorCedula) {
+      return res.status(400).json({ message: "El usuario con esta cedula ya existe" });
+    }
+
+    if (existingVendedorCorreo) {
+      return res.status(400).json({ message: "El usuario con este correo ya existe" });
+    }
+
+    const code = uuidv4();
+
+    const newVendedor = await User.create({
+      nombre,
+      cedula,
+      telefono,
+      correo,
+      direccion,
+      id_rol: "6667c97dbb2265c8a8eba941" , 
+      code,
+    });
+
+    res.json(newVendedor);
+
+  } catch (error) {
+    res.status(500).json({message: error.message})
+  }
+});
+
+const createEmpleado = asyncHandler(async (req, res) => {
+  try {
+    let {nombre, cedula, correo, telefono, contrasenia, fecha_contratacion, fecha_despido, motivo, id_rol} = req.body;
+
+    const existingEmpleadoCedula = await User.findOne({cedula});
+    const existingEmpleadoCorreo = await User.findOne({correo});
+
+    if (existingEmpleadoCedula) {
+      return res.status(400).json({ message: "El usuario con esta cedula ya existe" });
+    }
+
+    if (existingEmpleadoCorreo) {
+      return res.status(400).json({ message: "El usuario con este correo ya existe" });
+    }
+    const code = uuidv4();
+
+    if (contrasenia !== undefined) {
+      const hashedPassword = await bcrypt.hash(contrasenia, 10);
+      contrasenia = hashedPassword;
+    }
+    const newEmpleado = await User.create({
+      nombre,
+      cedula,
+      correo,
+      telefono,
+      contrasenia,
+      fecha_contratacion,
+      fecha_despido,
+      motivo,
+      id_rol, 
+      code,
+    });
+
+    res.json(newEmpleado);
+
+  } catch (error) {
+    res.status(500).json({message: error.message})
+  }
+});
+
+
 const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { cedula } = req.body;
@@ -67,75 +146,6 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
-const createUserMadais = async (req, res) => {
-  try {
-    // Obtener la data del usuario: cedula, nombre, correo, contrasenia, estado, rol
-    let { cedula, nombre, correo, contrasenia, estado, rol, fechaNacimiento } =
-      req.body;
-    const trimmedCorreo = correo.trim();
-
-    // Verificar si ya existe un usuario con el mismo correo
-    const existingUser = await User.findOne({ correo: trimmedCorreo });
-    if (existingUser) {
-      return res.status(400).json({ message: "Error usuario ya existe" });
-    }
-    // Generar el código
-    const code = uuidv4();
-
-    // Encriptar la contraseña con bcrypt si está presente
-    if (contrasenia !== undefined) {
-      const hashedPassword = await bcrypt.hash(contrasenia, 10);
-      contrasenia = hashedPassword;
-      const existingUserNIT = await User.findOne({ cedula: cedula });
-      if (existingUserNIT) {
-        return res
-          .status(400)
-          .json({ message: "Error usuario ya existe con esa cedula" });
-      }
-    }
-
-    // Crear el usuario
-    const user = new User({
-      cedula,
-      nombre,
-      correo: trimmedCorreo,
-      code,
-      rol,
-      contrasenia,
-      estado,
-    });
-
-    // Enviar email de verificación o confirmación
-    let template, mensaje;
-    const token = getToken({ correo: trimmedCorreo, code });
-    if (contrasenia !== undefined) {
-      template = getTemplate(nombre, token);
-      mensaje = "VERIFICACION EMAIL DE REGISTRO MADAIS";
-    } else {
-      template = getTemplate2(nombre);
-      mensaje = "REGISTRO EXITOSO";
-    }
-
-    await sendEmail(trimmedCorreo, mensaje, template);
-    console.log("eUser",user );
-    // Guardar el usuario en la base de datos
-    await user.save();
-    if (rol === "Cliente" && contrasenia !== undefined) {
-      const newCliente = new Cliente({
-        cedula,
-        fechaNacimiento,
-      });
-      await newCliente.save();
-    }
-    return res.status(200).json({ rol: user.rol, token: token });
-  } catch (error) {
-    console.log("ERRRROR", error)
-    return res.status(500).json({
-      success: false,
-      msg: "Error al registrar usuario",
-    });
-  }
-};
 
 //Este esta bien
 const deleteUser = asyncHandler(async (req, res) => {
@@ -150,9 +160,9 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 const getUser = asyncHandler(async (req, res) => {
-  const { correo } = req.params;
+  const { id } = req.params;
   try {
-    const getUser = await User.findOne({ correo });
+    const getUser = await User.findById(id);
     res.json(getUser);
   } catch (error) {
     throw new Error(error);
@@ -301,4 +311,6 @@ module.exports = {
   getUser,
   getallUser,
   authenticateUser,
+  createEmpleado,
+  createProveedor,
 };

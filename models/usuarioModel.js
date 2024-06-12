@@ -28,12 +28,22 @@ var personaSchema = new mongoose.Schema({
   },
   fecha_contratacion: {
     type: Date,
+    default: null
   },
   fecha_despido: {
     type: Date,
+    default: null
   },
+
+  direccion:{
+    type: String,
+    default: null
+  },
+
   motivo: {
     type: String,
+    required: false,
+    default: null
   },
   activo: {
     type: Boolean,
