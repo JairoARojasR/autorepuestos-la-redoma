@@ -29,6 +29,21 @@ app.use(bodyParser.urlencoded({ extended:false}));
 app.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);
 });  
+
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin','https://ayrlaredoma.netlify.app');
+    //res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
+
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Handle preflight requests sino
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
+
 //app.use('/public/confirm', pruebita)
 app.use('/api/categoria', categoriaRouter);
 app.use('/api/marca-auto', marcaautoRouter);
