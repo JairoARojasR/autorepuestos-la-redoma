@@ -25,7 +25,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser());
 //app.use('/api/color', colorRouter)
-app.use(bodyParser.urlencoded({ extended:false}));
+app.use(bodyParser.urlencoded({ extended:false})); 
 app.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);
 });  

@@ -10,7 +10,7 @@ const {
   getUser,
   getallUser,
 } = require("../controller/usuarioCtrl");
-
+ 
 const {sendEmailReset} = require("../config/mail.config");
 const {getTokenData} = require("../config/jwt.config");
 
@@ -24,7 +24,7 @@ router.delete("/:id", deleteUser);
 router.get("/:id", getUser); 
 router.post("/login", loginAdmin);
 router.put("/:id", updateUser);
-router.get("/logout", logout);
+router.post("/logout", logout);
 router.get("/", getallUser);
 
 //proveedor

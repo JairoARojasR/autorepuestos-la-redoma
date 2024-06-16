@@ -9,7 +9,7 @@ var servicioPrestadoSchema = new mongoose.Schema({
     required: true,
   },
   placaCarro: {
-    type: String,
+    type: Number,
     required: true,
   },
   id_servicio: {
