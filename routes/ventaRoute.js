@@ -11,7 +11,7 @@ const {
 } = require("../middleware/authMiddleware"); 
 
 const router = express.Router(); 
-router.post("/", createVenta);
+router.post("/crearVenta", createVenta);
 router.get("/:id", getVenta);
 router.get("/", getAllVentas);
 

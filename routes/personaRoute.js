@@ -26,6 +26,8 @@ router.post("/login", loginAdmin);
 router.put("/:id", updateUser);
 router.post("/logout", logout);
 router.get("/", getallUser);
+router.get("/", getallUser);
+
 
 //proveedor
 router.post("/proveedor", createProveedor)

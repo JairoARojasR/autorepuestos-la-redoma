@@ -18,8 +18,27 @@ var ventaSchema = new mongoose.Schema({
   id_cliente: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Persona',
+  },
+
+  nombre_cliente: {
+    type: String,
     required: true,
   },
+
+  cedula_cliente: {
+    type: Number,
+  },
+
+  correo_cliente: {
+    type: String,
+    required: true,
+  },
+
+telefono_cliente: {
+    type: Number,
+    required: true,
+  },
+
   total_venta: {
     type: Number,
     required: true,

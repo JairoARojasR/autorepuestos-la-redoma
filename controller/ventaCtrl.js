@@ -7,6 +7,8 @@ const asyncHandler = require("express-async-handler");
 const createVenta = asyncHandler(async (req, res) => {
   const { productos_vendidos, servicios_prestados, ...ventaData } = req.body;
 
+  console.log('Request body:', req.body[0]); // Log del cuerpo de la solicitud
+
   try {
     // Crear la venta
     const nuevaVenta = await Venta.create(ventaData);
@@ -15,13 +17,16 @@ const createVenta = asyncHandler(async (req, res) => {
     const productosVendidosCreados = await Producto_Vendido.insertMany(
       productos_vendidos.map(producto => ({ ...producto, id_venta: nuevaVenta._id }))
     );
+    console.log('Productos vendidos creados:', productosVendidosCreados);
 
     // Crear los servicios prestados asociados a la venta
     const serviciosPrestadosCreados = await Servicio_Prestado.insertMany(
       servicios_prestados.map(servicio => ({ ...servicio, id_venta: nuevaVenta._id }))
     );
+    console.log('Servicios prestados creados:', serviciosPrestadosCreados);
 
-    res.status(201).json({
+
+    res.status(200).json({
       venta: nuevaVenta,
       productos_vendidos: productosVendidosCreados,
       servicios_prestados: serviciosPrestadosCreados
