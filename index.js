@@ -30,19 +30,29 @@ app.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);
 });  
 
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin','https://ayrlaredoma.netlify.app');
-    //res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
 
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    // Handle preflight requests sino
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(200);
-    } else {
-      next();
-    }
-  });
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://ayrlaredoma.netlify.app');
+  // You can also configure other headers as needed
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
+
+// app.use((req, res, next) => {
+//     res.setHeader('Access-Control-Allow-Origin','https://ayrlaredoma.netlify.app');
+//     //res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
+
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//     // Handle preflight requests sino
+//     if (req.method === 'OPTIONS') {
+//       res.sendStatus(200);
+//     } else {
+//       next();
+//     }
+//   });
 
 //app.use('/public/confirm', pruebita)
 app.use('/api/categoria', categoriaRouter);
