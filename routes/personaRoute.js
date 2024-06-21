@@ -17,22 +17,21 @@ const {getTokenData} = require("../config/jwt.config");
 const {
   authMiddleware,
   isRole,
+  isPermiso
 } = require("../middleware/authMiddleware"); 
 const router = express.Router();
-router.post("/", createUser);
+router.post("/", authMiddleware, isPermiso(["Crear usuarios"]), createUser);
 router.delete("/:id", deleteUser);
 router.get("/:id", getUser); 
 router.post("/login", loginAdmin);
-router.put("/:id", updateUser);
+router.put("/:id", authMiddleware, isPermiso(["Editar usuarios","Inactivar usuarios"]), updateUser);
 router.post("/logout", logout);
 router.get("/", getallUser);
-router.get("/", getallUser);
-
 
 //proveedor
-router.post("/proveedor", createProveedor)
+router.post("/proveedor", authMiddleware, isPermiso(["Crear usuarios"]), createProveedor)
 //empleado
-router.post("/empleado", createEmpleado), 
+router.post("/empleado", authMiddleware, isPermiso(["Crear usuarios"]), createEmpleado), 
 
 
 router.get("/getTokenData/:token", async (req, res) => {

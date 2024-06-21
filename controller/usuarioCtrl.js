@@ -84,12 +84,14 @@ const createProveedor = asyncHandler(async (req, res) => {
   }
 });
 
+
+
 const createEmpleado = asyncHandler(async (req, res) => {
   try {
-    let {nombre, cedula, correo, telefono, contrasenia, fecha_contratacion, fecha_despido, motivo, id_rol} = req.body;
+    let { nombre, cedula, correo, telefono, contrasenia, fecha_contratacion, fecha_despido, motivo, id_rol, permisos } = req.body;
 
-    const existingEmpleadoCedula = await User.findOne({cedula});
-    const existingEmpleadoCorreo = await User.findOne({correo});
+    const existingEmpleadoCedula = await User.findOne({ cedula });
+    const existingEmpleadoCorreo = await User.findOne({ correo });
 
     if (existingEmpleadoCedula) {
       return res.status(400).json({ message: "El usuario con esta cedula ya existe" });
@@ -98,12 +100,14 @@ const createEmpleado = asyncHandler(async (req, res) => {
     if (existingEmpleadoCorreo) {
       return res.status(400).json({ message: "El usuario con este correo ya existe" });
     }
+
     const code = uuidv4();
 
     if (contrasenia !== undefined) {
       const hashedPassword = await bcrypt.hash(contrasenia, 10);
       contrasenia = hashedPassword;
     }
+
     const newEmpleado = await User.create({
       nombre,
       cedula,
@@ -113,17 +117,20 @@ const createEmpleado = asyncHandler(async (req, res) => {
       fecha_contratacion,
       fecha_despido,
       motivo,
-      id_rol, 
+      id_rol,
+      permisos,
       code,
     });
 
     res.json(newEmpleado);
-
   } catch (error) {
-    res.status(500).json({message: error.message})
+    res.status(500).json({ message: error.message });
   }
 });
 
+module.exports = {
+  createEmpleado,
+};
 
 const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;

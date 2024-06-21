@@ -5,28 +5,21 @@ const {
   getaallProducto,
   updateProducto,
   deleteProducto,
-  getProductosPorCategoria
 } = require("../controller/productoCtrl");
-// const {
-//   authMiddleware,
-//   isRole,
-// } = require("../middlewares/authMiddleware"); 
+const {
+  authMiddleware,
+  isRole,
+  isPermiso
+} = require("../middleware/authMiddleware"); 
 
-//const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.get("/", getaallProducto);
-router.post("/", createProducto);
+router.post("/", authMiddleware, isPermiso(["Agregar productos"]), createProducto);
 router.get("/:id", getaProducto);
-router.put("/:id", updateProducto);
+router.put("/:id",authMiddleware, isPermiso(["Editar productos","Inactivar productos"]), updateProducto);
 router.delete("/:id", deleteProducto);
 
-
-//router.get("/categoria/:id", getProductosPorCategoria);
-// router.get("/color/:id", getProductosPorColor);
-// router.get("/talla/:id", getProductosPorTalla);
-// router.put("/:id", authMiddleware, isRole(["Admin"]), updateProducto);
-// router.delete("/:id", authMiddleware, isRole(["Admin"]), deleteProducto);
 
 module.exports = router;
 

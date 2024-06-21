@@ -61,10 +61,10 @@ var personaSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
-  // permisos:[{
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'Permiso',
-  // }],
+  permisos:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Permiso',
+  }],
 },
 {
   timestamps: {

@@ -26,8 +26,9 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
 
 const isRole = (allowedRoles) => {
   return (req, res, next) => {
-    const userRoles = req.user.rol;
-    const hasPermission = allowedRoles.some(role => userRoles.includes(role));
+    console.log("req", req.user);
+    const userPermisos = req.user.permisos;
+    const hasPermission = allowedRoles.some(role => userPermisos.includes(role));
   if (hasPermission) {
       next();
     } else {
@@ -36,4 +37,19 @@ const isRole = (allowedRoles) => {
   };
 };
 
-module.exports = { authMiddleware, isRole };
+const isPermiso = (allowedRoles) => {
+  return (req, res, next) => {
+    const userPermisos = req.user.permisos.map(permiso => permiso.nombre); 
+    const hasPermission = allowedRoles.some(role => userPermisos.includes(role));
+
+    if (hasPermission) {
+      next();
+    } else {
+      return res.status(403).json({ message: "ERROR PERMISOS" });
+    }
+  };
+};
+
+
+
+module.exports = { authMiddleware, isRole, isPermiso };

@@ -6,6 +6,17 @@ const createPermiso = async (req, res) => {
     res.json(newCategoria);
 };
 
+
+const getallPermiso = async (req, res) => {
+    try {
+      const getallPermiso = await Permiso.find();
+      res.json(getallPermiso);
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
 module.exports = {
-    createPermiso
+    createPermiso,
+    getallPermiso
 }
