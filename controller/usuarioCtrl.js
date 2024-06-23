@@ -286,8 +286,10 @@ const loginAdmin = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Error usuario no registrado" });
   }
   let code = findUser.code;
-  const nombre= findUser.nombre;
-  const refreshToken = generateRefreshToken({ correo, code, nombre });
+  const nombre=findUser.nombre;
+  const id= findUser.id;
+  console.log("IDDDDDDDDDDDDD", id)
+  const refreshToken = generateRefreshToken({ correo, code, nombre, id:id });
   // Verificar las credenciales
   if (contrasenia !== undefined) {
     if (!(findUser && (await findUser.isPasswordMatched(contrasenia)))) {
@@ -308,10 +310,54 @@ const logout = asyncHandler(async (req, res) => {
   res.sendStatus(204); // forbidden
 });
 
+const updateUserByEmail = asyncHandler(async (req, res) => {
+  const { correobus } = req.params;
+  const { cedula, fechaNacimiento, correo, nombre } = req.body; 
+  const userData = req.body;
+  console.log("req.params:", req.params);
+  console.log("req.body:", req.body);
+
+  try {
+    // Encuentra al usuario por su correo electrónico
+    let user = await User.findOne({ correo: correobus });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Verifica que la cédula no se encuentre en otro usuario diferente al mismo
+    if (cedula) {
+      const userWithSameCedula = await User.findOne({ cedula, correo: { $ne: correobus } });
+      if (userWithSameCedula) {
+        return res.status(409).json({ message: "La cédula ya está en uso por otro usuario" });
+      }
+    }
+
+    // Actualiza los datos del usuario encontrado
+    user = await User.findOneAndUpdate({ correo: correobus }, userData, { new: true });
+    console.log("Usuario actualizado:", user);
+
+    let refreshToken;
+    // Si la cédula o la fecha de nacimiento han sido proporcionadas, crear o actualizar el cliente
+   
+    refreshToken = generateRefreshToken({ correo, code: user.code, nombre, id:user.id});
+    const response = { user };
+    if (refreshToken) {
+      response.token = refreshToken;
+    }
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error al actualizar el usuario o crear el cliente:", error);
+    res.status(500).json({ message: "Error al actualizar el usuario o crear el cliente" });
+  }
+});
+
+
 //Se exportan los metodos
 module.exports = {
   createUser,
   updateUser,
+  updateUserByEmail,
   deleteUser,
   logout,
   loginAdmin,

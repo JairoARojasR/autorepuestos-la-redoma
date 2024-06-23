@@ -1,5 +1,7 @@
 const Venta = require("../models/ventaModel");
+const Notificacion = require("../models/notificacionModel");
 const Producto_Vendido = require("../models/producto_vendidoModel");
+const Producto = require("../models/productoModel");
 const Servicio_Prestado = require("../models/servicio_prestadoModel");
 const asyncHandler = require("express-async-handler");
 
@@ -7,7 +9,7 @@ const asyncHandler = require("express-async-handler");
 const createVenta = asyncHandler(async (req, res) => {
   const { productos_vendidos, servicios_prestados, ...ventaData } = req.body;
 
-  console.log('Request body:', req.body[0]); // Log del cuerpo de la solicitud
+  console.log('Request body:', req.body); // Log del cuerpo de la solicitud
 
   try {
     // Crear la venta
@@ -19,12 +21,43 @@ const createVenta = asyncHandler(async (req, res) => {
     );
     console.log('Productos vendidos creados:', productosVendidosCreados);
 
+    // Actualizar la cantidad disponible de cada producto
+    await Promise.all(
+      productos_vendidos.map(async (productoVendido) => {
+        const prod = await Producto.findById(productoVendido.id_producto).populate('proveedores');
+        if (prod) {
+          prod.cantidad_disponible -= productoVendido.cantidad;
+          await prod.save();
+
+          // Verificar si la cantidad disponible es menor o igual a la cantidad mínima
+          if (prod.cantidad_disponible <= prod.cantidad_minima) {
+            // Construir el mensaje de notificación con los nombres y teléfonos de los proveedores
+            let mensaje = `Producto con referencia ${prod.referencia} - ${prod.nombre} está por debajo o igual a la cantidad mínima.`;
+            if (prod.proveedores && prod.proveedores.length > 0) {
+              mensaje += ` Proveedores: `;
+              prod.proveedores.forEach((proveedor, index) => {
+                mensaje += `${proveedor.nombre} con número de telefono: ${proveedor.telefono}`;
+                if (index !== prod.proveedores.length - 1) {
+                  mensaje += ', ';
+                }
+              });
+            }
+
+            // Persistir la notificación
+            const notificacion = new Notificacion({
+              producto_id: prod._id,
+              mensaje: mensaje,
+            });
+            await notificacion.save();
+          }
+        }
+      })
+    );
     // Crear los servicios prestados asociados a la venta
     const serviciosPrestadosCreados = await Servicio_Prestado.insertMany(
       servicios_prestados.map(servicio => ({ ...servicio, id_venta: nuevaVenta._id }))
     );
     console.log('Servicios prestados creados:', serviciosPrestadosCreados);
-
 
     res.status(200).json({
       venta: nuevaVenta,

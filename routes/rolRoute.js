@@ -16,7 +16,7 @@ const {
 const router = express.Router();
 //const { authJwt } = require('../middlewares');
 //const { verifyToken, checkPermission } = authJwt;
-router.post("/",authMiddleware, isPermiso(["Agregar rol"]),createRol);
+router.post("/",authMiddleware, isPermiso(["Agregar rol"]), createRol);
 //router.post("/", authMiddleware, isRole(["Admin" , "Empleado"]), createCategoria);
 //router.put("/:id", [authJwt.verifyToken, authJwt.checkPermission('65b93de42d4d1eab56a0825d')], updateCategoria);
 router.delete("/:id",authMiddleware, isPermiso(["Eliminar rol"]), deleteRol);

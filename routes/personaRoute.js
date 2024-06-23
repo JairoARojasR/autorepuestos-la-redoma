@@ -5,6 +5,7 @@ const {
   createEmpleado,
   loginAdmin,
   updateUser,
+  updateUserByEmail,
   logout,
   deleteUser,
   getUser,
@@ -22,9 +23,10 @@ const {
 const router = express.Router();
 router.post("/", authMiddleware, isPermiso(["Crear usuarios"]), createUser);
 router.delete("/:id", deleteUser);
+router.put("/actualizar-datos/:correobus", updateUserByEmail);
 router.get("/:id", getUser); 
 router.post("/login", loginAdmin);
-router.put("/:id", authMiddleware, isPermiso(["Editar usuarios","Inactivar usuarios"]), updateUser);
+router.put("/:id", updateUser);
 router.post("/logout", logout);
 router.get("/", getallUser);
 
@@ -39,10 +41,12 @@ router.get("/getTokenData/:token", async (req, res) => {
     const token = req.params.token;
     // Verificar si el token está presente
     if (!token) {
+      console.log("AQUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII")
       return res.status(400).json({ error: "Token no proporcionado" });
     }
 
     const decoded = await getTokenData(token);
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",decoded);
     res.status(200).json(decoded);
   } catch (error) {
     console.error("Error al decodificar token:", error);

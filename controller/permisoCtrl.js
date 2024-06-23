@@ -16,7 +16,18 @@ const getallPermiso = async (req, res) => {
     }
   };
 
+  const getPermisoNombreById = async (id) => {
+    try {
+        const permiso = await Permiso.findById({_id:id});
+        return permiso ? permiso.nombre : 'UNKNOWN';
+    } catch (error) {
+        console.error('Error fetching permission:', error);
+        return 'UNKNOWN';
+    }
+};
+
 module.exports = {
     createPermiso,
-    getallPermiso
+    getallPermiso,
+    getPermisoNombreById
 }

@@ -5,6 +5,10 @@ var rolSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+  },
+  activo: {
+    type: Boolean,
+    default: true,
   }
 },
 {

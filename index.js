@@ -11,7 +11,8 @@ const permisoRouter = require("./routes/permisoRoute");
 const personaRouter = require("./routes/personaRoute");
 const serviciosRouter = require("./routes/serviciosmantrepRoute");
 const ventaRouter = require("./routes/ventaRoute");
-const categoriaRouter=require("./routes/categoriaRoute");
+const categoriaRouter = require("./routes/categoriaRoute");
+const notificacionesRouter = require("./routes/notificacionesRoute");
 const bodyParser = require("body-parser");
 const morgan =require("morgan");
 const cookieParser = require("cookie-parser"); 
@@ -49,6 +50,7 @@ app.use((req, res, next) => {
 
 //app.use('/public/confirm', pruebita)
 app.use('/api/categoria', categoriaRouter);
+app.use('/api/notificaciones', notificacionesRouter);
 app.use('/api/marca-auto', marcaautoRouter);
 app.use('/api/persona', personaRouter);
 app.use('/api/producto', productoRouter);

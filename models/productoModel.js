@@ -26,6 +26,11 @@ var productoSchema = new mongoose.Schema(
       required: true,
     },
 
+    cantidad_minima:{ 
+      type: Number,
+      required: true,
+    },
+
     ubicacion: {
       type: String,
       required: true,
