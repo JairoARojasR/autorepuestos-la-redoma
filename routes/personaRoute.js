@@ -28,7 +28,7 @@ router.post("/reset-password", resetPassword);
 router.put("/actualizar-datos/:correobus", updateUserByEmail);
 router.get("/:id", getUser); 
 router.post("/login", loginAdmin);
-router.put("/:id", authMiddleware, isPermiso(["Editar usuarios"]),);
+router.put("/:id", authMiddleware, isPermiso(["Editar usuarios"]), updateUser);
 router.post("/logout", logout);
 router.get("/", getallUser);
 
