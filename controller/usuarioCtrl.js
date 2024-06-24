@@ -352,6 +352,34 @@ const updateUserByEmail = asyncHandler(async (req, res) => {
   }
 });
 
+const resetPassword = async (req, res) => {
+  try {
+    // Obtener la data del usuario: correo, nueva contraseña
+    req.body.correo = req.body.correo.trim();
+    let { correo, nuevaContrasenia } = req.body;
+
+    // Verificar si el usuario existe
+    const existingUser = await User.findOne({ correo });
+    if (!existingUser) {
+      return res.status(400).json({ message: "Usuario no encontrado" });
+    }
+
+    // Encriptar la nueva contraseña con bcrypt
+    const hashedPassword = await bcrypt.hash(nuevaContrasenia, 10);
+    existingUser.contrasenia = hashedPassword;
+
+    // Guardar el usuario con la nueva contraseña
+    await existingUser.save();
+
+    return res
+      .status(200)
+      .json({ message: "Contraseña actualizada exitosamente" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, msg: "Error al resetear la contraseña" });
+  }
+};
 
 //Se exportan los metodos
 module.exports = {
@@ -366,4 +394,5 @@ module.exports = {
   authenticateUser,
   createEmpleado,
   createProveedor,
+  resetPassword
 };

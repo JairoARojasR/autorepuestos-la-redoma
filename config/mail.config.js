@@ -5,13 +5,13 @@ const sendEmail = async (email, subject, html) => {
     host: "smtp.gmail.com",
     port: 587,
     auth: {
-      user: "madaissport8@gmail.com",
-      pass: "emmw dayn zbvv xnob",
+      user: "cenonrojas57@gmail.com",
+      pass: "atle yfie ezwl recy",
     },
   };
 
   const mensaje = {
-    from: "madaissport8@gmail.com",
+    from: "cenonrojas57@gmail.com",
     to: [email],
     subject,
     html,
@@ -29,13 +29,13 @@ const sendEmailReset = async (recipient_email , OTP ) => {
     host: "smtp.gmail.com",
     port: 587,
     auth: {
-      user: "madaissport8@gmail.com",
-      pass: "emmw dayn zbvv xnob",
+      user: "cenonrojas57@gmail.com",
+      pass: "atle yfie ezwl recy",
     },
   };
 
   const mensaje = {
-    from: "madaissport8@gmail.com",
+    from: "cenonrojas57@gmail.com",
     to: [recipient_email],
     subject: "Reestablecimiento de contraseña",
     html: `<!DOCTYPE html>
@@ -51,15 +51,15 @@ const sendEmailReset = async (recipient_email , OTP ) => {
     <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
       <div style="margin:50px auto;width:70%;padding:20px 0">
         <div style="border-bottom:1px solid #eee">
-          <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Madais Sport</a>
+          <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Autorepuestos La Redoma</a>
         </div>
         <p style="font-size:1.1em">Hola,</p>
         <p>Usa el siguiente código para confirmar su cambio de contraseña</p>
         <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${OTP}</h2>
         <hr style="border:none;border-top:1px solid #eee" />
         <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
-          <p>Madais Sport Inc</p>
-          <p>Villa del Rosario</p>
+          <p>Autorepuesto la redoma Inc</p>
+          <p>Los patios</p>
           <p>Norte de Santander</p>
         </div>
       </div>

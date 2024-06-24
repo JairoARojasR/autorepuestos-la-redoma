@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    // Handle preflight requests sino
+    // Handle preflight requests sino 
     if (req.method === 'OPTIONS') {
       res.sendStatus(200);
     } else {

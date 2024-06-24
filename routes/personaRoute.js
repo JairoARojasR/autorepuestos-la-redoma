@@ -6,6 +6,7 @@ const {
   loginAdmin,
   updateUser,
   updateUserByEmail,
+  resetPassword,
   logout,
   deleteUser,
   getUser,
@@ -23,10 +24,11 @@ const {
 const router = express.Router();
 router.post("/", authMiddleware, isPermiso(["Crear usuarios"]), createUser);
 router.delete("/:id", deleteUser);
+router.post("/reset-password", resetPassword);
 router.put("/actualizar-datos/:correobus", updateUserByEmail);
 router.get("/:id", getUser); 
 router.post("/login", loginAdmin);
-router.put("/:id", updateUser);
+router.put("/:id", authMiddleware, isPermiso(["Editar usuarios"]),);
 router.post("/logout", logout);
 router.get("/", getallUser);
 
